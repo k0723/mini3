@@ -15,9 +15,9 @@ class Settings(BaseSettings):
     GOOGLE_CLIENT_SECRET: str
     GOOGLE_REDIRECT_URI: str
     
-    clova_api_key: str
+    CLOVA_API_KEY: str
 
-    role_arn : str
+    ROLE_ARN : str
     
     class Config:
         env_file = ".env"
