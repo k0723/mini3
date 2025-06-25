@@ -6,10 +6,10 @@ class Settings(BaseSettings):
     DATABASE_URL: Optional[str] = None
     SECRET_KEY: Optional[str] = None
     
-    aws_access_key_id: str
-    aws_secret_key: str
-    aws_s3_bucket: str
-    aws_region: str
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_KEY: str
+    AWS_S3_BUCKET: str
+    AWS_REGION: str
 
     GOOGLE_CLIENT_ID: str
     GOOGLE_CLIENT_SECRET: str
