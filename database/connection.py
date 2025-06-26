@@ -1,5 +1,6 @@
 from typing import Optional
 from pydantic_settings import BaseSettings
+from sshtunnel import SSHTunnelForwarder
 from sqlmodel import SQLModel, create_engine, Session
 
 class Settings(BaseSettings):
@@ -18,6 +19,13 @@ class Settings(BaseSettings):
     CLOVA_API_KEY: str
 
     ROLE_ARN : str
+
+    BASTION_HOST : str
+    BASTION_USER : str
+    BASTION_KEY_PATH : str
+    RDS_HOST : str
+    RDS_PORT : int
+    LOCAL_PORT : int
     
     class Config:
         env_file = ".env"
@@ -25,13 +33,31 @@ class Settings(BaseSettings):
 settings = Settings()
     
 #database_connection_string = "mysql+pymysql://fastapiuser:p%40ssw0rd@localhost:3306/fastapidb"
-engine_url = create_engine(
-    settings.DATABASE_URL,
-    echo=True,
-)
+def start_ssh_tunnel_and_connect():
+    global ssh_server, engine_url
 
-def conn():
+    ssh_server = SSHTunnelForwarder(
+        (settings.BASTION_HOST, 22),
+        ssh_username=settings.BASTION_USER,
+        ssh_pkey=settings.BASTION_KEY_PATH,
+        remote_bind_address=(settings.RDS_HOST, settings.RDS_PORT),
+        local_bind_address=("127.0.0.1", settings.LOCAL_PORT),
+    )
+    ssh_server.start()
+
+    # SSH 터널된 로컬 포트로 DB 연결
+    engine_url = create_engine(
+        settings.DATABASE_URL,  # ← 이미 LOCAL_PORT 기반임
+        echo=True,
+    )
+
+    # 테이블 생성
     SQLModel.metadata.create_all(engine_url)
+
+def stop_ssh_tunnel():
+    global ssh_server
+    if ssh_server:
+        ssh_server.stop()
 
 def get_session():
     with Session(engine_url) as session:
