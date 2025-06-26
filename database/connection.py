@@ -2,6 +2,7 @@ from typing import Optional
 from pydantic_settings import BaseSettings
 from sshtunnel import SSHTunnelForwarder
 from sqlmodel import SQLModel, create_engine, Session
+from pathlib import Path
 
 class Settings(BaseSettings):
     DATABASE_URL: Optional[str] = None
@@ -33,13 +34,16 @@ class Settings(BaseSettings):
 settings = Settings()
     
 #database_connection_string = "mysql+pymysql://fastapiuser:p%40ssw0rd@localhost:3306/fastapidb"
+
+BASE_DIR = Path(__file__).resolve().parent.parent  # 프로젝트 루트 (Vagrantfile 위치)
+KEY_PATH = "/app/keys/MyKeyPair.pem" 
 def start_ssh_tunnel_and_connect():
     global ssh_server, engine_url
 
     ssh_server = SSHTunnelForwarder(
         (settings.BASTION_HOST, 22),
         ssh_username=settings.BASTION_USER,
-        ssh_pkey=settings.BASTION_KEY_PATH,
+        ssh_pkey=KEY_PATH,
         remote_bind_address=(settings.RDS_HOST, settings.RDS_PORT),
         local_bind_address=("127.0.0.1", settings.LOCAL_PORT),
     )

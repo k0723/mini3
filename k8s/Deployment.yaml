@@ -23,3 +23,11 @@ spec:
         envFrom:
         - secretRef:
             name: diary-secret-env
+        volumeMounts:
+          - name: bastion-key
+            mountPath: /app/keys
+            readOnly: true
+      volumes:
+        - name: bastion-key
+          secret:
+            secretName: bastion-key
