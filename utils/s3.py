@@ -19,6 +19,7 @@ ROLE_ARN     = os.getenv("ROLE_ARN")
 # 1) STS AssumeRole → 임시 자격증명 획득
 # ───────────────────────────────────────
 def get_s3_client():
+    sts = boto3.client("sts", region_name=AWS_REGION)
     creds = sts.assume_role(
     RoleArn=ROLE_ARN,
     RoleSessionName="presigner"
@@ -29,7 +30,7 @@ def get_s3_client():
         region_name = AWS_REGION,
         aws_access_key_id = creds["AccessKeyId"],
         aws_secret_access_key=creds["SecretAccessKey"],
-        aws_session_token=creds["sessionToken"]
+        aws_session_token=creds["SessionToken"]
     )
 
 
@@ -80,3 +81,13 @@ def get_presigned_url(file_type: str) -> dict:
         ExpiresIn=900                                 # 15분 권장
     )
     return {"url": url, "key": key}
+
+
+# utils/s3.py 내부
+def generate_presigned_download_url(file_key: str) -> str:
+    s3 = get_s3_client()
+    return s3.generate_presigned_url(
+        ClientMethod='get_object',
+        Params={'Bucket': BUCKET_NAME, 'Key': file_key},
+        ExpiresIn=3600
+    )

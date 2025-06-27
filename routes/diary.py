@@ -11,7 +11,7 @@ from database.connection import get_session
 
 from models.diarys_model import Diary, DiaryUpdate, DiaryList # DiaryList 모델이 username, user_id, state 필드를 포함해야 함
 from models.users_model import User
-from utils.s3 import upload_file_to_s3, get_presigned_url, s3, BUCKET_NAME
+from utils.s3 import get_presigned_url, BUCKET_NAME,get_s3_client
 from utils.clova import analyze_emotion_async
 
 # pathlib 모듈의 Path 클래스를 FilePath 이름으로 사용
@@ -42,6 +42,7 @@ async def generate_presigned_url_for_upload(file_type: str, user_id: int = Depen
 @diary_router.get("/download-url")
 async def generate_presigned_url_for_download(file_key: str, user_id: int = Depends(authenticate)):
     try:
+        s3 = get_s3_client()
         url = s3.generate_presigned_url(
             ClientMethod='get_object',
             Params={
