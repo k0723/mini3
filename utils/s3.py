@@ -18,22 +18,24 @@ ROLE_ARN     = os.getenv("ROLE_ARN")
 # ───────────────────────────────────────
 # 1) STS AssumeRole → 임시 자격증명 획득
 # ───────────────────────────────────────
-sts   = boto3.client("sts", region_name=AWS_REGION)
-creds = sts.assume_role(
+def get_s3_client():
+    creds = sts.assume_role(
     RoleArn=ROLE_ARN,
     RoleSessionName="presigner"
-)["Credentials"]
+    )["Credentials"]
+
+    return boto3.client(
+        "s3",
+        region_name = AWS_REGION,
+        aws_access_key_id = creds["AccessKeyId"],
+        aws_secret_access_key=creds["SecretAccessKey"],
+        aws_session_token=creds["sessionToken"]
+    )
+
 
 # ───────────────────────────────────────
 # 2) Role 자격증명으로 S3 클라이언트 단일 생성
 # ───────────────────────────────────────
-s3 = boto3.client(
-    "s3",
-    region_name=AWS_REGION,
-    aws_access_key_id=creds["AccessKeyId"],
-    aws_secret_access_key=creds["SecretAccessKey"],
-    aws_session_token=creds["SessionToken"]       # ★ 중요
-)
 
 print("✅ [DEBUG] BUCKET_NAME =", BUCKET_NAME)
 print("✅ [DEBUG] REGION      =", AWS_REGION)
@@ -43,6 +45,7 @@ print("✅ [DEBUG] REGION      =", AWS_REGION)
 # ───────────────────────────────────────
 def upload_file_to_s3(file, filename: str | None = None) -> str:
     """FastAPI UploadFile 같은 file 객체를 바로 S3로 업로드"""
+    s3 = get_s3_client()
     ext      = file.filename.split('.')[-1]
     filename = filename or f"{uuid4()}.{ext}"
 
@@ -64,6 +67,7 @@ def get_presigned_url(file_type: str) -> dict:
     클라이언트(프론트엔드)가 직접 S3에 PUT 업로드할 수 있는 presigned-URL 반환
     :param file_type: 'png', 'jpg' 등 파일 확장자
     """
+    s3 = get_s3_client()
     key = f"{uuid4()}.{file_type}"
 
     url = s3.generate_presigned_url(
