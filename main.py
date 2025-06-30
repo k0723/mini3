@@ -26,7 +26,7 @@ app.add_middleware(
     allow_origins=["http://localhost:5173","https://fc0b-58-120-204-126.ngrok-free.app","http://mybucket-mini3.s3-website.ap-northeast-2.amazonaws.com"],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
+    allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
 )
 app.add_middleware(
     SessionMiddleware,
