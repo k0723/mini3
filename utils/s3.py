@@ -64,23 +64,27 @@ def upload_file_to_s3(file, filename: str | None = None) -> str:
 # 4) PUT presigned-URL 발급
 # ───────────────────────────────────────
 def get_presigned_url(file_type: str) -> dict:
-    """
-    클라이언트(프론트엔드)가 직접 S3에 PUT 업로드할 수 있는 presigned-URL 반환
-    :param file_type: 'png', 'jpg' 등 파일 확장자
-    """
-    s3 = get_s3_client()
-    key = f"{uuid4()}.{file_type}"
+    try:
+        if not file_type:
+            raise ValueError("file_type is required")
 
-    url = s3.generate_presigned_url(
-        ClientMethod="put_object",
-        Params={
-            "Bucket": BUCKET_NAME,
-            "Key": key,
-            "ContentType": f"image/{file_type}"       # curl/axios 쪽도 동일 헤더 필요
-        },
-        ExpiresIn=900                                 # 15분 권장
-    )
-    return {"url": url, "key": key}
+        s3 = get_s3_client()
+        key = f"{uuid4()}.{file_type}"
+
+        url = s3.generate_presigned_url(
+            ClientMethod="put_object",
+            Params={
+                "Bucket": BUCKET_NAME,
+                "Key": key,
+                "ContentType": f"image/{file_type}"
+            },
+            ExpiresIn=900
+        )
+        return {"url": url, "key": key}
+
+    except Exception as e:
+        print("❌ [ERROR] presigned-url 생성 실패:", e)
+        raise
 
 
 # utils/s3.py 내부
