@@ -46,6 +46,7 @@ def start_ssh_tunnel_and_connect():
         ssh_pkey=KEY_PATH,
         remote_bind_address=(settings.RDS_HOST, settings.RDS_PORT),
         local_bind_address=("127.0.0.1", settings.LOCAL_PORT),
+        set_keepalive=30,
     )
     ssh_server.start()
 
@@ -53,6 +54,8 @@ def start_ssh_tunnel_and_connect():
     engine_url = create_engine(
         settings.DATABASE_URL,  # ← 이미 LOCAL_PORT 기반임
         echo=True,
+        pool_pre_ping=True,
+        connect_args={"coonect_tiemout":10},
     )
 
     # 테이블 생성
