@@ -9,7 +9,14 @@ settings = Settings()
 
 # JWT 토큰 생성
 def create_jwt_token(email: str, user_id: int, role: str) -> str:
-    payload = {"user": email, "user_id": user_id, "role": role, "iat": time(), "exp": time() + 3600}
+    now = int(time())  # 현재 시간을 정수형으로 변환
+    payload = {
+        "user": email,
+        "user_id": user_id,
+        "role": role,
+        "iat": now,           # ✅ int
+        "exp": now + 3600     # ✅ int
+    }
     token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
     return token
 
