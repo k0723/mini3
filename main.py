@@ -6,6 +6,7 @@ from database.connection import start_ssh_tunnel_and_connect,stop_ssh_tunnel
 from starlette.middleware.sessions import SessionMiddleware  
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.proxy_headers import ProxyHeadersMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -20,8 +21,6 @@ async def lifespan(app: FastAPI):
     print("애플리케이션 종료")
 
 app = FastAPI(lifespan=lifespan)
-
-from fastapi.middleware.cors import CORSMiddleware
 app.add_middleware(ProxyHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
