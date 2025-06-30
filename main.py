@@ -5,6 +5,7 @@ from routes.diary import diary_router
 from database.connection import start_ssh_tunnel_and_connect,stop_ssh_tunnel
 from starlette.middleware.sessions import SessionMiddleware  
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.proxy_headers import ProxyHeadersMiddleware
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,6 +22,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(ProxyHeadersMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173","https://fc0b-58-120-204-126.ngrok-free.app","http://mybucket-mini3.s3-website.ap-northeast-2.amazonaws.com"],
