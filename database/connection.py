@@ -55,7 +55,7 @@ def start_ssh_tunnel_and_connect():
         settings.DATABASE_URL,  # ← 이미 LOCAL_PORT 기반임
         echo=True,
         pool_pre_ping=True,
-        connect_args={"coonect_tiemout":10},
+        connect_args={"coonect_timeout":10},
     )
 
     # 테이블 생성
